@@ -486,10 +486,11 @@ static void gdb_handle_exception(struct hvt *hvt, int sigval)
         case 'g': {
             /* Read general registers */
             len = BUFMAX;
+            memset(registers, 0, 560);
             if (hvt_gdb_read_registers(hvt, registers, &len) == -1) {
                 send_error_msg();
             } else {
-                mem2hex(registers, obuf, len);
+                mem2hex(registers, obuf, 560);
                 send_packet(obuf);
             }
             break; /* Wait for another command. */
