@@ -27,6 +27,14 @@ void block_init(struct spt_boot_info *bi)
     mft = bi->mft;
 }
 
+solo5_result_t solo5_block_optional_acquire(const char *name, solo5_handle_t *handle,
+                                   struct solo5_block_optional_info *info)
+{
+    /* TODO: stub. */
+    assert(name != NULL && handle != NULL && info != NULL);
+    return SOLO5_R_EINVAL;
+}
+
 solo5_result_t solo5_block_acquire(const char *name, solo5_handle_t *handle,
                                    struct solo5_block_info *info)
 {

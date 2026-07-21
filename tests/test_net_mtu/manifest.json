@@ -1,5 +1,5 @@
 {
     "type": "solo5.manifest",
-    "version": 1,
+    "version": 2,
     "devices": [ { "name": "service0", "type": "NET_BASIC" } ]
 }

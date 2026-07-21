@@ -127,6 +127,8 @@ const char *mft_type_to_string(mft_type_t type)
         return "BLOCK_BASIC";
     case MFT_DEV_NET_BASIC:
         return "NET_BASIC";
+    case MFT_DEV_BLOCK_OPTIONAL:
+        return "BLOCK_OPTIONAL";
     case MFT_RESERVED_FIRST:
         return "RESERVED_FIRST";
     default:

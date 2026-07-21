@@ -101,6 +101,12 @@ solo5_result_t solo5_block_acquire(const char *name U, solo5_handle_t *handle U,
     return SOLO5_R_EUNSPEC;
 }
 
+solo5_result_t solo5_block_optional_acquire(const char *name U, solo5_handle_t *handle U,
+                                   struct solo5_block_optional_info *info U)
+{
+    return SOLO5_R_EUNSPEC;
+}
+
 solo5_result_t solo5_block_write(solo5_handle_t handle U, solo5_off_t offset U,
                                  const uint8_t *buf U, size_t size U)
 {

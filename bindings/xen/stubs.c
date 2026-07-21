@@ -50,6 +50,12 @@ solo5_result_t solo5_block_acquire(const char *name, solo5_handle_t *handle,
     return SOLO5_R_EUNSPEC;
 }
 
+solo5_result_t solo5_block_optional_acquire(const char *name, solo5_handle_t *handle,
+                                 struct solo5_block_optional_info *info)
+{
+    return SOLO5_R_EUNSPEC;
+}
+
 solo5_result_t solo5_block_write(solo5_handle_t handle, solo5_off_t offset,
                                  const uint8_t *buf, size_t size)
 {

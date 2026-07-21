@@ -41,7 +41,6 @@
 #include "hvt.h"
 #include "solo5.h"
 
-static bool module_in_use;
 static struct mft *host_mft;
 
 static void hypercall_block_write(struct hvt *hvt, hvt_gpa_t gpa)
@@ -51,8 +50,11 @@ static void hypercall_block_write(struct hvt *hvt, hvt_gpa_t gpa)
     const struct mft_entry *e =
         mft_get_by_index(host_mft, wr->handle, MFT_DEV_BLOCK_BASIC);
     if (e == NULL) {
-        wr->ret = SOLO5_R_EINVAL;
-        return;
+        e = mft_get_by_index(host_mft, wr->handle, MFT_DEV_BLOCK_OPTIONAL);
+        if (e == NULL || !e->u.block_basic.attached) {
+            wr->ret = SOLO5_R_EINVAL;
+            return;
+        }
     }
 
     ssize_t ret;
@@ -89,8 +91,11 @@ static void hypercall_block_read(struct hvt *hvt, hvt_gpa_t gpa)
     const struct mft_entry *e =
         mft_get_by_index(host_mft, rd->handle, MFT_DEV_BLOCK_BASIC);
     if (e == NULL) {
-        rd->ret = SOLO5_R_EINVAL;
-        return;
+        e = mft_get_by_index(host_mft, rd->handle, MFT_DEV_BLOCK_OPTIONAL);
+        if (e == NULL || !e->u.block_basic.attached) {
+            rd->ret = SOLO5_R_EINVAL;
+            return;
+        }
     }
 
     ssize_t ret;
@@ -151,8 +156,12 @@ static int handle_cmdarg(char *cmdarg, struct mft *mft)
         struct mft_entry *e =
             mft_get_by_name(mft, name, MFT_DEV_BLOCK_BASIC, NULL);
         if (e == NULL) {
-            warnx("Resource not declared in manifest: '%s'", name);
-            return -1;
+            e = mft_get_by_name(mft, name, MFT_DEV_BLOCK_OPTIONAL, NULL);
+            if (e == NULL) {
+                warnx("Resource not declared in manifest: '%s'", name);
+                return -1;
+            }
+            e->u.block_basic.attached = true;
         }
         off_t capacity;
         int fd = block_attach(path, &capacity);
@@ -162,7 +171,6 @@ static int handle_cmdarg(char *cmdarg, struct mft *mft)
         e->u.block_basic.capacity = capacity;
         e->b.hostfd = fd;
         e->attached = true;
-        module_in_use = true;
     } else if (which == opt_block_size) {
         uint16_t block_size;
         int rc = sscanf(cmdarg,
@@ -181,8 +189,11 @@ static int handle_cmdarg(char *cmdarg, struct mft *mft)
         struct mft_entry *e =
             mft_get_by_name(mft, name, MFT_DEV_BLOCK_BASIC, NULL);
         if (e == NULL) {
-            warnx("Resource not declared in manifest: '%s'", name);
-            return -1;
+            e = mft_get_by_name(mft, name, MFT_DEV_BLOCK_OPTIONAL, NULL);
+            if (e == NULL) {
+                warnx("Resource not declared in manifest: '%s'", name);
+                return -1;
+            }
         }
         e->u.block_basic.block_size = block_size;
     }
@@ -192,18 +203,18 @@ static int handle_cmdarg(char *cmdarg, struct mft *mft)
 
 static int setup(struct hvt *hvt, struct mft *mft)
 {
-    if (!module_in_use)
-        return 0;
-
+    bool module_in_use = false;
     host_mft = mft;
-    assert(hvt_core_register_hypercall(HVT_HYPERCALL_BLOCK_WRITE,
-                                       hypercall_block_write) == 0);
-    assert(hvt_core_register_hypercall(HVT_HYPERCALL_BLOCK_READ,
-                                       hypercall_block_read) == 0);
 
     for (unsigned i = 0; i != mft->entries; i++) {
-        if (mft->e[i].type != MFT_DEV_BLOCK_BASIC || !mft->e[i].attached)
+        if (!((mft->e[i].type == MFT_DEV_BLOCK_BASIC && mft->e[i].attached) || mft->e[i].type == MFT_DEV_BLOCK_OPTIONAL))
             continue;
+        if (mft->e[i].type == MFT_DEV_BLOCK_OPTIONAL && !mft->e[i].attached) {
+            mft->e[i].attached = true;
+            mft->e[i].u.block_basic.attached = false;
+            continue;
+        }
+        module_in_use = true;
 
         /*
          * We now set default block_size if needed, and check that the capacity
@@ -229,6 +240,13 @@ static int setup(struct hvt *hvt, struct mft *mft)
                                          "in size",
                  name, block_size);
     }
+
+    if (!module_in_use)
+        return 0;
+    assert(hvt_core_register_hypercall(HVT_HYPERCALL_BLOCK_WRITE,
+                                       hypercall_block_write) == 0);
+    assert(hvt_core_register_hypercall(HVT_HYPERCALL_BLOCK_READ,
+                                       hypercall_block_read) == 0);
 
 #if HVT_FREEBSD_ENABLE_CAPSICUM
     cap_rights_t rights;

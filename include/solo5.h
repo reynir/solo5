@@ -315,6 +315,12 @@ struct solo5_block_info {
     solo5_off_t block_size; /* Minimum I/O unit (block size), bytes */
 };
 
+struct solo5_block_optional_info {
+    solo5_off_t capacity; /* Capacity of block device, bytes */
+    solo5_off_t block_size; /* Minimum I/O unit (block size), bytes */
+    bool attached;
+};
+
 /*
  * Acquires a handle to the block device declared as (name) in the application
  * manifest. The returned handle is stored in (*handle), and properties of the
@@ -325,6 +331,8 @@ struct solo5_block_info {
 solo5_result_t solo5_block_acquire(const char *name, solo5_handle_t *handle,
                                    struct solo5_block_info *info);
 
+solo5_result_t solo5_block_optional_acquire(const char *name, solo5_handle_t *handle,
+                                            struct solo5_block_optional_info *info);
 /*
  * Writes data of (size) bytes from the buffer (*buf) to the block device
  * identified by (handle), starting at byte (offset). Data is either written in

@@ -37,7 +37,7 @@
 /*
  * MFT_VERSION is the manifest ABI version.
  */
-#define MFT_VERSION 1
+#define MFT_VERSION 2
 
 /*
  * Supported manifest entry types.
@@ -45,6 +45,7 @@
 typedef enum mft_type {
     MFT_DEV_BLOCK_BASIC = 1,
     MFT_DEV_NET_BASIC,
+    MFT_DEV_BLOCK_OPTIONAL,
     MFT_RESERVED_FIRST = (1U << 30)
 } mft_type_t;
 
@@ -54,6 +55,7 @@ typedef enum mft_type {
 struct mft_block_basic {
     uint64_t capacity;
     uint16_t block_size;
+    bool attached; /* Is the block device actually attached? */
 };
 
 /*

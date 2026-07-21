@@ -230,6 +230,14 @@ int virtio_config_block(struct pci_config_info *pci, solo5_handle_t mft_index)
     return 0;
 }
 
+solo5_result_t solo5_block_optional_acquire(const char *name, solo5_handle_t *handle,
+                                   struct solo5_block_optional_info *info)
+{
+    /* TODO: stub. */
+    assert(name != NULL && handle != NULL && info != NULL);
+    return SOLO5_R_EINVAL;
+}
+
 solo5_result_t solo5_block_acquire(const char *name, solo5_handle_t *h,
                                    struct solo5_block_info *info)
 {

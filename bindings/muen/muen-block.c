@@ -29,6 +29,12 @@ solo5_result_t solo5_block_acquire(const char *name __attribute__((unused)),
     return SOLO5_R_EUNSPEC;
 }
 
+solo5_result_t solo5_block_optional_acquire(const char *name __attribute((unused)), solo5_handle_t *handle __attribute((unused)),
+                                 struct solo5_block_optional_info *info __attribute((unused)))
+{
+    return SOLO5_R_EUNSPEC;
+}
+
 solo5_result_t solo5_block_write(solo5_handle_t handle __attribute__((unused)),
                                  solo5_off_t offset __attribute__((unused)),
                                  const uint8_t *buf __attribute__((unused)),

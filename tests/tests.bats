@@ -596,6 +596,25 @@ xen_expect_abort() {
   [ "$status" = 1 ] && [[ "$output" == *"Block size must be a multiple of 2 greater than or equal 512"* ]]
 }
 
+@test "blk_optional hvt" {
+    setup_block
+    hvt_run --block:optional=${BLOCK} --block-sector-size:optional=4096 -- test_blk_optional/test_blk_optional.hvt
+    expect_success
+}
+
+@test "blk_optional without-optional hvt" {
+    hvt_run -- test_blk_optional/test_blk_optional.hvt
+    [ "$status" -eq 97 ]
+}
+
+@test "blk_optional with-unused hvt" {
+    setup_block
+    UNUSED=${BATS_TMPDIR}/unused.img
+    dd if=/dev/zero of=${UNUSED} bs=4k count=1024 status=none
+    hvt_run --block:optional=${BLOCK} --block-sector-size:optional=4096 --block:unused=${UNUSED} -- test_blk_optional/test_blk_optional.hvt
+    [ "$status" -eq 98 ]
+}
+
 @test "net hvt" {
   skip_unless_root
 

@@ -1,6 +1,6 @@
 {
     "type": "solo5.manifest",
-    "version": 1,
+    "version": 2,
     "devices": [
         { "name": "storage1", "type": "BLOCK_BASIC" },
         { "name": "storage2", "type": "BLOCK_BASIC" },
